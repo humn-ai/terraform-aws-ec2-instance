@@ -1,7 +1,7 @@
 locals {
-  instance_count = module.this.enabled ? 1 : 0
+  instance_count = module.label.enabled ? 1 : 0
   # create an instance profile if the instance is enabled and we aren't given one to use
-  instance_profile_count = module.this.enabled ? (length(var.instance_profile) > 0 ? 0 : 1) : 0
+  instance_profile_count = module.label.enabled ? (length(var.instance_profile) > 0 ? 0 : 1) : 0
   instance_profile       = local.instance_profile_count == 0 ? var.instance_profile : join("", aws_iam_instance_profile.default.*.name)
   security_group_count   = var.create_default_security_group ? 1 : 0
   region                 = var.region != "" ? var.region : data.aws_region.default.name
@@ -11,7 +11,7 @@ locals {
   ami                    = var.ami != "" ? var.ami : join("", data.aws_ami.default.*.image_id)
   ami_owner              = var.ami != "" ? var.ami_owner : join("", data.aws_ami.default.*.owner_id)
   root_volume_type       = var.root_volume_type != "" ? var.root_volume_type : data.aws_ami.info.root_device_type
-  public_dns             = var.associate_public_ip_address && var.assign_eip_address && module.this.enabled ? data.null_data_source.eip.outputs["public_dns"] : join("", aws_instance.default.*.public_dns)
+  public_dns             = var.associate_public_ip_address && var.assign_eip_address && module.label.enabled ? data.null_data_source.eip.outputs["public_dns"] : join("", aws_instance.default.*.public_dns)
 }
 
 data "aws_caller_identity" "default" {
@@ -72,27 +72,27 @@ data "aws_ami" "info" {
 
 # https://github.com/hashicorp/terraform-guides/tree/master/infrastructure-as-code/terraform-0.13-examples/module-depends-on
 resource "null_resource" "instance_profile_dependency" {
-  count = module.this.enabled && length(var.instance_profile) > 0 ? 1 : 0
+  count = module.label.enabled && length(var.instance_profile) > 0 ? 1 : 0
   triggers = {
     dependency_id = var.instance_profile
   }
 }
 
 data "aws_iam_instance_profile" "given" {
-  count      = module.this.enabled && length(var.instance_profile) > 0 ? 1 : 0
+  count      = module.label.enabled && length(var.instance_profile) > 0 ? 1 : 0
   name       = var.instance_profile
   depends_on = [null_resource.instance_profile_dependency]
 }
 
 resource "aws_iam_instance_profile" "default" {
   count = local.instance_profile_count
-  name  = module.this.id
+  name  = module.label.id
   role  = join("", aws_iam_role.default.*.name)
 }
 
 resource "aws_iam_role" "default" {
   count                = local.instance_profile_count
-  name                 = module.this.id
+  name                 = module.label.id
   path                 = "/"
   assume_role_policy   = data.aws_iam_policy_document.default.json
   permissions_boundary = var.permissions_boundary_arn
@@ -133,14 +133,14 @@ resource "aws_instance" "default" {
     delete_on_termination = var.delete_on_termination
   }
 
-  tags = module.this.tags
+  tags = module.label.tags
 }
 
 resource "aws_eip" "default" {
-  count             = var.associate_public_ip_address && var.assign_eip_address && module.this.enabled ? 1 : 0
+  count             = var.associate_public_ip_address && var.assign_eip_address && module.label.enabled ? 1 : 0
   network_interface = join("", aws_instance.default.*.primary_network_interface_id)
   vpc               = true
-  tags              = module.this.tags
+  tags              = module.label.tags
 }
 
 data "null_data_source" "eip" {
@@ -155,7 +155,7 @@ resource "aws_ebs_volume" "default" {
   size              = var.ebs_volume_size
   iops              = local.ebs_iops
   type              = var.ebs_volume_type
-  tags              = module.this.tags
+  tags              = module.label.tags
 }
 
 resource "aws_volume_attachment" "default" {
