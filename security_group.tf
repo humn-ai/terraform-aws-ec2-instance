@@ -1,9 +1,9 @@
 resource "aws_security_group" "default" {
   count       = local.security_group_count
-  name        = module.this.id
+  name        = module.label.id
   vpc_id      = var.vpc_id
   description = "Instance default security group (only egress access is allowed)"
-  tags        = module.this.tags
+  tags        = module.label.tags
 
   lifecycle {
     create_before_destroy = true
