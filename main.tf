@@ -10,7 +10,7 @@ locals {
   availability_zone      = var.availability_zone != "" ? var.availability_zone : data.aws_subnet.default.availability_zone
   ami                    = var.ami != "" ? var.ami : join("", data.aws_ami.default.*.image_id)
   ami_owner              = var.ami != "" ? var.ami_owner : join("", data.aws_ami.default.*.owner_id)
-  root_volume_type       = var.root_volume_type != "" ? var.root_volume_type : data.aws_ami.info.root_device_type
+  root_volume_type       = var.root_volume_type != "" ? var.root_volume_type : data.aws_ami.info.0.root_device_type
   public_dns             = var.associate_public_ip_address && var.assign_eip_address && module.label.enabled ? data.null_data_source.eip.outputs["public_dns"] : join("", aws_instance.default.*.public_dns)
 }
 
