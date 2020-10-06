@@ -47,7 +47,7 @@ examples: |-
 # Related projects
 related:
   - name: cloudposse/terraform-aws-ec2-instance
-    description: Original module provider
+    description: Cloudposse
     url: https://github.com/cloudposse/terraform-aws-ec2-instance
 
 # Contributor information

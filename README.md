@@ -43,12 +43,12 @@
 
 [![README Header][logo]][website]
 
-# tf-mod-aws-appsync-iam
+# tf-mod-aws-ec2-instance
 
 ## Module description
 
 
-This module creates an AWS AppSync DataSource.
+Terraform Module for provisioning a general purpose EC2 host.
 
 
 
@@ -64,7 +64,7 @@ Project: **[%!s(<nil>)](%!s(<nil>))** : [[%!s(<nil>)](%!s(<nil>))] | [[%!s(<nil>
 ## Usage
 
 **IMPORTANT:** The `master` branch is used in `source` just as an example. In your code, do not pin to `master` because there may be breaking changes between releases.
-Instead pin to the release tag (e.g. `?ref=tags/x.y.z`) of one of our [latest releases](https://github.com/https://github.com/humn-ai/tf-mod-aws-appsync-iam/releases).
+Instead pin to the release tag (e.g. `?ref=tags/x.y.z`) of one of our [latest releases](https://github.com/https://github.com/humn-ai/tf-mod-aws-ec2-instance/releases).
 
 
 The below values shown in the usage of this module are purely representative, please replace desired values as required.
@@ -93,48 +93,90 @@ TO-DO
 
 | Name | Version |
 |------|---------|
-| aws | ~> 2.0 >= 2.7.0 |
+| aws | >= 2.0 |
+| null | >= 2.0 |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
-| policy\_config | (Optional) - A list of objects that contain configuration for each policy required by kylin | <code><pre>list(object({<br>    name        = string<br>    description = string<br>    path        = string<br>    policy      = string<br>  }))<br></pre></code> | n/a | yes |
-| role\_sts\_externalid | STS ExternalId condition value to use with a role (when MFA is not required) | `string` | n/a | yes |
-| attributes | (Optional) - Additional attributes (e.g. `1`) | `list(string)` | `[]` | no |
-| availability\_zones | (Optional) - The AWS avaialbility zones (e.g. ap-southeast-2a/b/c). Autoloaded from region.tfvars. | `list(string)` | `[]` | no |
-| aws\_account\_id | The AWS account id of the provider being deployed to (e.g. 12345678). Autoloaded from account.tfvars | `string` | `""` | no |
-| aws\_assume\_role\_arn | (Optional) - ARN of the IAM role when optionally connecting to AWS via assumed role. Autoloaded from account.tfvars. | `string` | `""` | no |
-| aws\_assume\_role\_external\_id | (Optional) - The external ID to use when making the AssumeRole call. | `string` | `""` | no |
-| aws\_assume\_role\_session\_name | (Optional) - The session name to use when making the AssumeRole call. | `string` | `""` | no |
-| aws\_region | The AWS region (e.g. ap-southeast-2). Autoloaded from region.tfvars. | `string` | `""` | no |
-| delimiter | (Optional) - Delimiter to be used between `namespace`, `environment`, `stage`, `name` and `attributes` | `string` | `"-"` | no |
-| eks\_oidc\_provider | The EKS OIDC provider ID | `string` | `""` | no |
-| enabled | (Optional) - A Switch that decides whether to create a terraform resource or run a provisioner. Default is true | `bool` | `true` | no |
-| environment | (Optional) - Environment, e.g. 'dev', 'qa', 'staging', 'prod' | `string` | `""` | no |
-| federated\_role\_arns | ARNs of Federated entities who can assume these roles | `list(string)` | `[]` | no |
-| force\_detach\_policies | Whether policies should be detached from this role when destroying | `bool` | `false` | no |
-| k8s\_namespace | The K8s Namespace of the targeted service account. | `string` | `""` | no |
-| k8s\_service\_account | The EKS K8s aervice account to add to the roles trust policy | `string` | `""` | no |
-| max\_session\_duration | Maximum CLI/API session duration in seconds between 3600 and 43200 | `number` | `3600` | no |
-| mfa\_age | Max age of valid MFA (in seconds) for roles which require MFA | `number` | `86400` | no |
-| name | (Optional) - Solution name, e.g. 'vault', 'consul', 'keycloak', 'k8s', or 'baseline' | `string` | `""` | no |
-| namespace | (Optional) - Namespace, which could be your abbreviated product team, e.g. 'rci', 'mi', 'hp', or 'core' | `string` | `""` | no |
-| role\_description | Managed By Terraform | `string` | `""` | no |
-| role\_path | Path of IAM role | `string` | `"/"` | no |
-| role\_permissions\_boundary\_arn | Permissions boundary ARN to use for IAM role | `string` | `""` | no |
-| role\_requires\_mfa | Whether role requires MFA | `bool` | `false` | no |
-| tags | (Optional) - Additional tags | `map(string)` | `{}` | no |
-| trusted\_role\_actions | Actions of STS | `list(string)` | <code><pre>[<br>  "sts:AssumeRole"<br>]<br></pre></code> | no |
-| trusted\_role\_arns | ARNs of AWS entities who can assume these roles | `list(string)` | `[]` | no |
-| trusted\_role\_services | AWS Services that can assume these roles | `list(string)` | `[]` | no |
+| delimiter | Delimiter to be used between `namespace`, `environment`, `stage`, `name` and `attributes`. Defaults to `-` (hyphen). Set to `""` to use no delimiter at all. | `string` | n/a | yes |
+| enabled | Set to false to prevent the module from creating any resources | `bool` | n/a | yes |
+| environment | Environment, e.g. 'uw2', 'us-west-2', OR 'prod', 'staging', 'dev', 'UAT' | `string` | n/a | yes |
+| id\_length\_limit | Limit `id` to this many characters. Set to `0` for unlimited length. Set to `null` for default, which is `0`. Does not affect `id_full`. | `number` | n/a | yes |
+| label\_order | The naming order of the id output and Name tag. Defaults to ["namespace", "environment", "stage", "name", "attributes"]. You can omit any of the 5 elements, but at least one must be present. | `list(string)` | n/a | yes |
+| name | Solution name, e.g. 'app' or 'jenkins' | `string` | n/a | yes |
+| namespace | Namespace, which could be your organization name or abbreviation, e.g. 'eg' or 'cp' | `string` | n/a | yes |
+| regex\_replace\_chars | Regex to replace chars with empty string in `namespace`, `environment`, `stage` and `name`. If not set, `"/[^a-zA-Z0-9-]/"` is used to remove all characters other than hyphens, letters and digits. | `string` | n/a | yes |
+| ssh\_key\_pair | SSH key pair to be provisioned on the instance | `string` | n/a | yes |
+| stage | Stage, e.g. 'prod', 'staging', 'dev', OR 'source', 'build', 'test', 'deploy', 'release' | `string` | n/a | yes |
+| subnet | VPC Subnet ID the instance is launched in | `string` | n/a | yes |
+| user\_data | The user data to provide when launching the instance. Do not pass gzip-compressed data via this argument; use `user_data_base64` instead | `string` | n/a | yes |
+| user\_data\_base64 | Can be used instead of `user_data` to pass base64-encoded binary data directly. Use this instead of `user_data` whenever the value is not a valid UTF-8 string. For example, gzip-encoded user data must be base64-encoded and passed via this argument to avoid corruption | `string` | n/a | yes |
+| vpc\_id | The ID of the VPC that the instance security group belongs to | `string` | n/a | yes |
+| additional\_ips\_count | Count of additional EIPs | `number` | `0` | no |
+| additional\_tag\_map | Additional tags for appending to tags\_as\_list\_of\_maps. Not added to `tags`. | `map(string)` | `{}` | no |
+| allowed\_ports | List of allowed ingress TCP ports | `list(number)` | `[]` | no |
+| allowed\_ports\_udp | List of allowed ingress UDP ports | `list(number)` | `[]` | no |
+| ami | The AMI to use for the instance. By default it is the AMI provided by Amazon with Ubuntu 16.04 | `string` | `""` | no |
+| ami\_owner | Owner of the given AMI (ignored if `ami` unset) | `string` | `""` | no |
+| applying\_period | The period in seconds over which the specified statistic is applied | `number` | `60` | no |
+| assign\_eip\_address | Assign an Elastic IP address to the instance | `bool` | `true` | no |
+| associate\_public\_ip\_address | Associate a public IP address with the instance | `bool` | `true` | no |
+| attributes | Additional attributes (e.g. `1`) | `list(string)` | `[]` | no |
+| availability\_zone | Availability Zone the instance is launched in. If not set, will be launched in the first AZ of the region | `string` | `""` | no |
+| comparison\_operator | The arithmetic operation to use when comparing the specified Statistic and Threshold. Possible values are: GreaterThanOrEqualToThreshold, GreaterThanThreshold, LessThanThreshold, LessThanOrEqualToThreshold. | `string` | `"GreaterThanOrEqualToThreshold"` | no |
+| context | Single object for setting entire context at once. See description of individual variables for details. Leave string and numeric variables as `null` to use default value. Individual variable settings (non-null) override settings in context object, except for attributes, tags, and additional\_tag\_map, which are merged. | <code><pre>object({<br>    enabled             = bool<br>    namespace           = string<br>    environment         = string<br>    stage               = string<br>    name                = string<br>    delimiter           = string<br>    attributes          = list(string)<br>    tags                = map(string)<br>    additional_tag_map  = map(string)<br>    regex_replace_chars = string<br>    label_order         = list(string)<br>    id_length_limit     = number<br>  })<br></pre></code> | <code><pre>{<br>  "additional_tag_map": {},<br>  "attributes": [],<br>  "delimiter": null,<br>  "enabled": true,<br>  "environment": null,<br>  "id_length_limit": null,<br>  "label_order": [],<br>  "name": null,<br>  "namespace": null,<br>  "regex_replace_chars": null,<br>  "stage": null,<br>  "tags": {}<br>}<br></pre></code> | no |
+| create\_default\_security\_group | Create default Security Group with only Egress traffic allowed | `bool` | `true` | no |
+| default\_alarm\_action | Default alarm action | `string` | `"action/actions/AWS_EC2.InstanceId.Reboot/1.0"` | no |
+| delete\_on\_termination | Whether the volume should be destroyed on instance termination | `bool` | `true` | no |
+| disable\_api\_termination | Enable EC2 Instance Termination Protection | `bool` | `false` | no |
+| ebs\_device\_name | Name of the EBS device to mount | `list(string)` | <code><pre>[<br>  "/dev/xvdb",<br>  "/dev/xvdc",<br>  "/dev/xvdd",<br>  "/dev/xvde",<br>  "/dev/xvdf",<br>  "/dev/xvdg",<br>  "/dev/xvdh",<br>  "/dev/xvdi",<br>  "/dev/xvdj",<br>  "/dev/xvdk",<br>  "/dev/xvdl",<br>  "/dev/xvdm",<br>  "/dev/xvdn",<br>  "/dev/xvdo",<br>  "/dev/xvdp",<br>  "/dev/xvdq",<br>  "/dev/xvdr",<br>  "/dev/xvds",<br>  "/dev/xvdt",<br>  "/dev/xvdu",<br>  "/dev/xvdv",<br>  "/dev/xvdw",<br>  "/dev/xvdx",<br>  "/dev/xvdy",<br>  "/dev/xvdz"<br>]<br></pre></code> | no |
+| ebs\_iops | Amount of provisioned IOPS. This must be set with a volume\_type of io1 | `number` | `0` | no |
+| ebs\_optimized | Launched EC2 instance will be EBS-optimized | `bool` | `false` | no |
+| ebs\_volume\_count | Count of EBS volumes that will be attached to the instance | `number` | `0` | no |
+| ebs\_volume\_size | Size of the EBS volume in gigabytes | `number` | `10` | no |
+| ebs\_volume\_type | The type of EBS volume. Can be standard, gp2 or io1 | `string` | `"gp2"` | no |
+| evaluation\_periods | The number of periods over which data is compared to the specified threshold. | `number` | `5` | no |
+| instance\_profile | A pre-defined profile to attach to the instance (default is to build our own) | `string` | `""` | no |
+| instance\_type | The type of the instance | `string` | `"t2.micro"` | no |
+| ipv6\_address\_count | Number of IPv6 addresses to associate with the primary network interface. Amazon EC2 chooses the IPv6 addresses from the range of your subnet (-1 to use subnet default) | `number` | `0` | no |
+| ipv6\_addresses | List of IPv6 addresses from the range of the subnet to associate with the primary network interface | `list(string)` | `[]` | no |
+| metric\_name | The name for the alarm's associated metric. Allowed values can be found in https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/ec2-metricscollected.html | `string` | `"StatusCheckFailed_Instance"` | no |
+| metric\_namespace | The namespace for the alarm's associated metric. Allowed values can be found in https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/aws-namespaces.html | `string` | `"AWS/EC2"` | no |
+| metric\_threshold | The value against which the specified statistic is compared | `number` | `1` | no |
+| monitoring | Launched EC2 instance will have detailed monitoring enabled | `bool` | `true` | no |
+| permissions\_boundary\_arn | Policy ARN to attach to instance role as a permissions boundary | `string` | `""` | no |
+| private\_ip | Private IP address to associate with the instance in the VPC | `string` | `""` | no |
+| region | AWS Region the instance is launched in | `string` | `""` | no |
+| root\_iops | Amount of provisioned IOPS. This must be set if root\_volume\_type is set to `io1` | `number` | `0` | no |
+| root\_volume\_size | Size of the root volume in gigabytes | `number` | `10` | no |
+| root\_volume\_type | Type of root volume. Can be standard, gp2 or io1 | `string` | `"gp2"` | no |
+| security\_groups | List of Security Group IDs allowed to connect to the instance | `list(string)` | `[]` | no |
+| source\_dest\_check | Controls if traffic is routed to the instance when the destination address does not match the instance. Used for NAT or VPNs | `bool` | `true` | no |
+| statistic\_level | The statistic to apply to the alarm's associated metric. Allowed values are: SampleCount, Average, Sum, Minimum, Maximum | `string` | `"Maximum"` | no |
+| tags | Additional tags (e.g. `map('BusinessUnit','XYZ')` | `map(string)` | `{}` | no |
+| welcome\_message | Welcome message | `string` | `""` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| role\_arn | The Amazon Resource Name (ARN) specifying the role. |
-| role\_name | The name of the role. |
+| additional\_eni\_ids | Map of ENI to EIP |
+| alarm | CloudWatch Alarm ID |
+| arn | ARN of the instance |
+| ebs\_ids | IDs of EBSs |
+| id | Disambiguated ID of the instance |
+| instance\_profile | Name of the instance's profile (either built or supplied) |
+| name | Instance name |
+| primary\_network\_interface\_id | ID of the instance's primary network interface |
+| private\_dns | Private DNS of instance |
+| private\_ip | Private IP of instance |
+| public\_dns | Public DNS of instance (or DNS of EIP) |
+| public\_ip | Public IP of instance (or EIP) |
+| role | Name of AWS IAM Role associated with the instance |
+| security\_group\_ids | IDs on the AWS Security Groups associated with the instance |
+| ssh\_key\_pair | Name of the SSH key pair provisioned on the instance |
 
 
 
@@ -145,7 +187,7 @@ You can find more [Terraform Modules](terraform_modules) by vising the link.
 
 Additionally, check out these other related, and maintained projects.
 
-- [%!s(<nil>)](%!s(<nil>)) - %!s(<nil>)
+- [cloudposse/terraform-aws-ec2-instance](https://github.com/cloudposse/terraform-aws-ec2-instance) - Cloudposse
 
 
 
@@ -155,7 +197,7 @@ Additionally, check out these other related, and maintained projects.
 
 **Got a question?** We got answers. 
 
-File a Github [issue](https://github.com/humn-ai/tf-mod-aws-appsync-iam/issues), or message us on [Slack][slack]
+File a Github [issue](https://github.com/humn-ai/tf-mod-aws-ec2-instance/issues), or message us on [Slack][slack]
 
 
 ### Contributors
@@ -180,7 +222,9 @@ File a Github [issue](https://github.com/humn-ai/tf-mod-aws-appsync-iam/issues),
 
 [![README Footer][logo]][website]
 
-  [logo]: https://humnai-web-assests.s3-eu-west-1.amazonaws.com/humn-logo.png
-  [website]: https://https://humn.ai/
-  [github]: https://github.com/humn-ai/tf-humn-iac-live
-  [slack]: humncloud.slack.com
+  [logo]: https://wariva-github-assets.s3.eu-west-2.amazonaws.com/logo.png
+  [website]: https://www.linkedin.com/company/52152765/admin/
+  [github]: https://github.com/Callumccr
+  [slack]: https://wariva.slack.com
+  [linkedin]: https://www.linkedin.com/in/callum-robertson-1a55b6110/
+  [terraform_modules]: https://github.com/Callumccr
