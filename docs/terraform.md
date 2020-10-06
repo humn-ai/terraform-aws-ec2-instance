@@ -2,8 +2,8 @@
 
 | Name | Version |
 |------|---------|
-| aws | >= 2.0 |
-| null | >= 2.0 |
+| aws | ~> 2.0 >= 2.7.0 |
+| null | n/a |
 
 ## Inputs
 
