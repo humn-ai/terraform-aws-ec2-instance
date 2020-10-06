@@ -62,6 +62,7 @@ data "aws_ami" "default" {
 }
 
 data "aws_ami" "info" {
+  count = var.ami == "" ? 1 : 0
   filter {
     name   = "image-id"
     values = [local.ami]
