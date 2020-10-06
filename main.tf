@@ -4,7 +4,7 @@ locals {
   instance_profile_count = module.label.enabled ? (length(var.instance_profile) > 0 ? 0 : 1) : 0
   instance_profile       = local.instance_profile_count == 0 ? var.instance_profile : join("", aws_iam_instance_profile.default.*.name)
   security_group_count   = var.create_default_security_group ? 1 : 0
-  region                 = var.region != "" ? var.region : data.aws_region.default.name
+  region                 = var.aws_region != "" ? var.aws_region : data.aws_region.default.name
   root_iops              = var.root_volume_type == "io1" ? var.root_iops : "0"
   ebs_iops               = var.ebs_volume_type == "io1" ? var.ebs_iops : "0"
   availability_zone      = var.availability_zone != "" ? var.availability_zone : data.aws_subnet.default.availability_zone
