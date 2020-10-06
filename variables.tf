@@ -1,3 +1,29 @@
+# -----------------------------------------------------------------------------
+# Variables: Common AWS Provider - Autoloaded from Terragrunt
+# -----------------------------------------------------------------------------
+
+variable "aws_region" {
+  description = "The AWS region (e.g. ap-southeast-2). Autoloaded from region.tfvars."
+  type        = string
+  default     = ""
+}
+
+variable "aws_account_id" {
+  description = "The AWS account id of the provider being deployed to (e.g. 12345678). Autoloaded from account.tfvars"
+  type        = string
+  default     = ""
+}
+
+variable "aws_assume_role_arn" {
+  description = "(Optional) - ARN of the IAM role when optionally connecting to AWS via assumed role. Autoloaded from account.tfvars."
+  type        = string
+  default     = ""
+}
+
+# -----------------------------------------------------------------------------
+# Variables: TF-MOD-AWS-EC2-INSTANCE
+# -----------------------------------------------------------------------------
+
 variable "ssh_key_pair" {
   type        = string
   description = "SSH key pair to be provisioned on the instance"
@@ -59,12 +85,6 @@ variable "allowed_ports_udp" {
 variable "subnet" {
   type        = string
   description = "VPC Subnet ID the instance is launched in"
-}
-
-variable "region" {
-  type        = string
-  description = "AWS Region the instance is launched in"
-  default     = ""
 }
 
 variable "availability_zone" {

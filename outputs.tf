@@ -1,3 +1,7 @@
+# -----------------------------------------------------------------------------
+# Outputs: TF-MOD-AWS-EC2-INSTANCE
+# -----------------------------------------------------------------------------
+
 output "public_ip" {
   description = "Public IP of instance (or EIP)"
   value       = concat(aws_eip.default.*.public_ip, aws_instance.default.*.public_ip, [""])[0]
